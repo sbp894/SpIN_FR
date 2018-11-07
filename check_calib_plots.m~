@@ -1,0 +1,55 @@
+clear;
+clc;
+clf;
+
+AllChinIDs= [369 369 370 358 360 366 367];
+
+tStart = 0; tEnd = 1.3;
+
+fig_save_dir= '/media/parida/DATAPART1/Matlab/SNRenv/SFR_sEPSM/Figure_Out/Calib/';
+if ~isdir(fig_save_dir)
+    mkdir(fig_save_dir);
+end
+
+xtickVals= [.2 .5 1 2 4 7 10];
+fSize=16;
+lw=2;
+saveFigs= 1;
+
+for chinVar= 1:length(AllChinIDs)
+    chinID= AllChinIDs(chinVar);
+    RootDataDir= '/media/parida/DATAPART1/Matlab/ExpData/MatData/';
+    
+    allFiles= dir([RootDataDir '*' num2str(chinID) '*SFR*']);
+    
+    if isempty(allFiles)
+        error('No dir. what to do?');
+    elseif length(allFiles)>1
+        warning('there are multiple dirs. choosing last one');
+        warning('bad!!! ');
+        if chinVar==1
+            data_dir= [RootDataDir allFiles(1).name filesep];
+        else
+            data_dir= [RootDataDir allFiles(end).name filesep];
+        end
+    else
+        data_dir= [RootDataDir allFiles.name filesep];
+    end
+    
+    files_in_dir= dir([data_dir '*calib*.mat']);
+    if length(files_in_dir)==1
+        temp= load([data_dir  files_in_dir.name]);
+    elseif length(files_in_dir)>1
+        temp= load([data_dir  files_in_dir(end).name]);
+        warning('using last calib file');
+    end
+    calibData= temp.data.CalibData;
+    figure(1);
+    clf;
+    semilogx(calibData(:,1), calibData(:,2), 'linew', lw);
+    set(gca, 'xtick', xtickVals, 'fontsize', fSize);
+    axis tight;
+    grid on;
+    xlabel('frequency (kHz)');
+    yla
+end
