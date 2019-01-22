@@ -2,7 +2,7 @@ clear;
 clc;
 clf;
 
-AllChinIDs= [369 369 370 358 360 366 367];
+AllChinIDs= 368; %[369 369 370 358 360 366 367];
 
 tStart = 0; tEnd = 1.3;
 
@@ -36,6 +36,7 @@ for chinVar= 1:length(AllChinIDs)
     RootDataDir= '/media/parida/DATAPART1/Matlab/ExpData/MatData/';
     
     allFiles= dir([RootDataDir '*' num2str(chinID) '*SFR*']);
+    allFiles= allFiles(~contains({allFiles.name}, 'pink'));
     
     if isempty(allFiles)
         error('No dir. what to do?');
@@ -45,7 +46,7 @@ for chinVar= 1:length(AllChinIDs)
         if chinVar==1
             data_dir= [RootDataDir allFiles(1).name filesep];
         else
-            data_dir= [RootDataDir allFiles(end).name filesep];
+            data_dir= [RootDataDir allFiles(2).name filesep];
         end
     else
         data_dir= [RootDataDir allFiles.name filesep];

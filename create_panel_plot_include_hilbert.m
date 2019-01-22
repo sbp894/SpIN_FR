@@ -1,5 +1,9 @@
 function create_panel_plot_include_hilbert(figHan, fs_sig, sig, fs_data, data_pos_filt, data_neg_filt, data_env, data_tfs, tStart, tEnd, fig_save_dir, fName, ttlStr, saveFigs)
 
+if ~isdir(fig_save_dir)
+    mkdir(fig_save_dir);
+end
+
 t_sig= (1:length(sig))/fs_sig;
 t_data= (1:length(data_pos_filt))/fs_data;
 
@@ -28,7 +32,7 @@ ax(3)= plot(t_data, Ashift + abs(hilbert(data_pos_filt)), 'linew', lw);
 ax(4)= plot(t_data, Ashift + abs(hilbert(data_neg_filt)), 'linew', lw);
 ax(5)= plot(t_data, data_env, 'linew', lw);
 ax(6)= plot(t_data,- Ashift + data_tfs, 'linew', lw);
-ax(7)= plot(t_sig, - 2*Ashift + sig*Ashift, 'k', 'linew', lw);
+ax(7)= plot(t_sig, - 2*Ashift + sig*Ashift/2, 'k', 'linew', lw);
 grid on;
 lg= legend(ax, '+ve pol', '-ve pol', '+ve Hilb', '-ve Hilb', 'sum of pols', 'diff of pols',  'stim');
 set(lg, 'fontsize', 10, 'location', 'eastoutside');
@@ -39,6 +43,7 @@ title(ttlStr);
 xlim([tStart-5e-3 tEnd+5e-3]);
 
 %%
+xticks= [10 100 1e3 4e3];
 subplot(nSProws, nSPcols, 3);
 yyaxis left;
 [Pxx, ~, ~]= plot_dpss_psd(sig(inds2use_stim), fs_sig, 'NW', nw);
@@ -53,8 +58,9 @@ set(bx2, 'color', get(ax(6), 'color'), 'linestyle', '-');
 Pxx= [Pxx_env; Pxx_tfs];
 ylim([max(Pxx)+5-yRange max(Pxx)+5]);
 
-legend('Stim', 'Data-ENV', 'Data-TFS');
-set(gca, 'fontsize', fSize);
+lg= legend('Stim', 'Data-ENV', 'Data-TFS', 'location', 'southwest');
+set(lg, 'fontsize', 10);
+set(gca, 'fontsize', fSize, 'xtick', xticks);
 
 %%
 subplot(nSProws, nSPcols, 4);
@@ -71,13 +77,14 @@ set(bx4, 'color', get(ax(4), 'color'), 'linestyle', '-');
 Pxx= [Pxx_env; Pxx_tfs];
 ylim([max(Pxx)+5-yRange max(Pxx)+5]);
 
-legend('Stim', 'Hilb (+ve)', 'Hilb (-ve)');
-set(gca, 'fontsize', fSize);
+lg= legend('Stim', 'Hilb (+ve)', 'Hilb (-ve)', 'location', 'southwest');
+set(lg, 'fontsize', 10);
+set(gca, 'fontsize', fSize, 'xtick', xticks);
 
 %%
 set(gcf, 'units', 'normalized', 'position', [0 0 1 1]);
 
 if saveFigs
-    saveas(gcf, [fig_save_dir fName]);
+%     saveas(gcf, [fig_save_dir fName]);
     saveas(gcf, [fig_save_dir fName], 'tiff');
 end
