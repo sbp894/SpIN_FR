@@ -1,6 +1,6 @@
-% run('/media/parida/DATAPART1/Matlab/ExpData/NelData/SP-2017_05_15-Q313_SFR_Pilot/a0007_FFR_SNRenvStim0dB_SN_P_nType0_atten25.m');
+run('/media/parida/DATAPART1/Matlab/ExpData/NelData/SP-2017_05_15-Q313_SFR_Pilot/a0007_FFR_SNRenvStim0dB_SN_P_nType0_atten25.m');
 % run('/media/parida/DATAPART1/Matlab/ExpData/NelData/SP-2017_05_15-Q314_SFR_Pilot/a0003_FFR_SNRenvStim0dB_SN_P_nType1_atten25.m');
-run('/media/parida/DATAPART1/Matlab/ExpData/NelData/SP-2017_05_15-Q313_SFR_Pilot/a0007_FFR_SNRenvStim6dB_SN_P_nType0_atten25.m')
+% run('/media/parida/DATAPART1/Matlab/ExpData/NelData/SP-2017_05_15-Q313_SFR_Pilot/a0007_FFR_SNRenvStim6dB_SN_P_nType0_atten25.m')
 data= ans;
 [stim, fs]= audioread('/media/parida/DATAPART1/Matlab/SNRenv/SFR_sEPSM/stimSetStationary/Stim6dB_SN_P.wav');
 t_stim= (1:length(stim))/fs;

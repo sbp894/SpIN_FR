@@ -6,7 +6,7 @@ chinID= 366;
 stimDir= '/media/parida/DATAPART1/Matlab/SNRenv/SFR_sEPSM/shorter_stim/stim/';
 fig_save_dir= '/media/parida/DATAPART1/Matlab/SNRenv/SFR_sEPSM/Figure_Out/maskerSFR/';
 
-if ~isdir(fig_save_dir)
+if ~isfolder(fig_save_dir)
     mkdir(fig_save_dir);
 end
 

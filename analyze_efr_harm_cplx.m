@@ -9,13 +9,18 @@ co(4:7,:)= [colSpread*rand(4,1) colSpread*rand(4,1) 1-colSpread*rand(4,1)];
 
 lw=2;
 lw2= 3;
+mrkSize= 16;
 count=0;
 
 allChins= [191 366 367 365 368 369 370];
 allSPL= [55 70 82];
 CodesDir= '/media/parida/DATAPART1/Matlab/SNRenv/SFR_sEPSM/';
 DataDir= '/media/parida/DATAPART1/Matlab/ExpData/MatData/';
-OutDir= 'Figure_Out/';
+OutFigDir= 'Figure_Out/EFR_hrm_cmplx/';
+
+if ~isfolder(OutFigDir)
+    mkdir(OutFigDir);
+end
 
 bxx= nan(length(allSPL), 1);
 cxx= nan(length(allSPL), 1);
@@ -24,6 +29,12 @@ for splVar= 1:3
     figure(splVar);
     clf;
 end
+
+[hrm_cplx_sig, fs_sig]= audioread('/media/parida/DATAPART1/Matlab/Design_Exps_NEL/create_harmonic_complex_ffr_hf_vs_lf/LF_HF_CMPLX_HRMNC_Stimuli/LFlow2high_complex.wav');
+bp_hf_audio_Filt= get_filter(fs_sig, 500, 3.1e3);
+bp_lf_audio_Filt= get_filter(fs_sig, 80, 500);
+hrm_cplx_sig_hf= filtfilt(bp_hf_audio_Filt, hrm_cplx_sig);
+hrm_cplx_sig_lf= filtfilt(bp_lf_audio_Filt, hrm_cplx_sig);
 
 for splVar= 1:length(allSPL)
     for chinVar= 1:length(allChins)
@@ -84,7 +95,7 @@ for splVar= 1:length(allSPL)
         
         N_bp_half= 10;
         HalfPowerFrequency1=90;
-        HalfPowerFrequency2=130;
+        HalfPowerFrequency2=460;
         curFilt= designfilt('bandpassiir','FilterOrder',N_bp_half, ...get(p,props)
             'HalfPowerFrequency1',HalfPowerFrequency1,'HalfPowerFrequency2',HalfPowerFrequency2, ...
             'SampleRate',fs_data);
@@ -92,7 +103,7 @@ for splVar= 1:length(allSPL)
         env_f0= filter(curFilt, data_env);
         tfs_f0= filter(curFilt, data_tfs);
         
-        ttlStr= sprintf('Q%d, SPL=%.0f, %d-%d Hz band', chinID, allSPL(splVar), HalfPowerFrequency1, HalfPowerFrequency2);
+        ttlStr= sprintf('Intensity=%.0f dB SPL, %d-%d Hz band', allSPL(splVar), HalfPowerFrequency1, HalfPowerFrequency2);
         
         plot_data_env_tfs= 0;
         if plot_data_env_tfs
@@ -103,32 +114,39 @@ for splVar= 1:length(allSPL)
             title(ttlStr)
         end
         
-        segRes= 100e-3;
+        segRes= 200e-3;
         fracMove= .5;
         env_dBSPL= gen_get_spl_vals(env_f0, fs_data, segRes, fracMove);
         [tfs_dBSPL, timeVals]= gen_get_spl_vals(tfs_f0, fs_data, segRes, fracMove);
-        
+        sig_hf_spl= gen_get_spl_vals(hrm_cplx_sig_hf, fs_sig, segRes, fracMove);
+        sig_lf_spl= gen_get_spl_vals(hrm_cplx_sig_lf, fs_sig, segRes, fracMove);
         
         plot_rms= 1;
         if plot_rms
             figure(splVar);
             %             yyaxis left
             subplot(211);
+%             yyaxis left;
             bxx(splVar)= gca;
             hold on
-            plot(timeVals, env_dBSPL, '-d', 'color', co(chinVar, :), 'linew', lw);
-            plot(timeVals, tfs_dBSPL, '--o', 'color', co(chinVar, :), 'linew', lw);
+            plot(timeVals, env_dBSPL, '-d', 'color', co(chinVar, :), 'linew', lw, 'markersize', mrkSize);
+            plot(timeVals, tfs_dBSPL, '--o', 'color', co(chinVar, :), 'linew', lw, 'markersize', mrkSize);
             title(ttlStr);
             grid on
             
+%             yyaxis right;
+%             plot(timeVals, sig_hf_spl, '-s', 'color', [.2 .6 .2], 'linew', lw, 'markersize', mrkSize);
+%             plot(timeVals, sig_hf_spl, '-s', 'color', [.2 .2 .6], 'linew', lw, 'markersize', mrkSize);
+
+            set(gca, 'ycolor', [.2 .6 .2]);
+
             %             yyaxis right
             subplot(212);
             hold on;
             cxx(splVar)= gca;
-            plot(timeVals, env_dBSPL-tfs_dBSPL, '-', 'color', co(chinVar, :), 'linew', lw2);
+            plot(timeVals, env_dBSPL-tfs_dBSPL, '-', 'color', co(chinVar, :), 'linew', lw2, 'markersize', mrkSize);
             grid on
-            xlabel('time (sec)');
-            
+            xlabel('Stim LF power (dB)');
             %             ylim([30 52]);
         end
         
@@ -201,6 +219,17 @@ for splVar= 1:3
     %     legend(lg(inds_2), lgStr(inds_2), 'location', 'southwest');
     
     set(gcf, 'units', 'normalized', 'position', [.1 .1 .8 .8]);
-    figName= sprintf('%sspl%d_f0_%dto%d_Hz', OutDir, allSPL(splVar), HalfPowerFrequency1, HalfPowerFrequency2);
-    saveas(gcf, figName, 'tiff');
+    figName= sprintf('%sspl%d_f0_%dto%d_Hz', OutFigDir, allSPL(splVar), HalfPowerFrequency1, HalfPowerFrequency2);
+    saveas(gcf, figName, 'png');
+end
+
+
+function bpFilt= get_filter(fs_data, HalfPowerFrequency1, HalfPowerFrequency2)
+N_bp_half= 4;
+% HalfPowerFrequency1=500;
+% HalfPowerFrequency2=3.1e3;
+
+bpFilt= designfilt('bandpassiir','FilterOrder',N_bp_half, ...get(p,props)
+    'HalfPowerFrequency1',HalfPowerFrequency1,'HalfPowerFrequency2',HalfPowerFrequency2, ...
+    'SampleRate',fs_data);
 end

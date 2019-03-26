@@ -1,22 +1,16 @@
+% Script to create FFR panel plots per chin
 clear;
 clc;
 
-% AllChinIDs= [358 360 365 366 367 368 369 370];
-% AllChinIDs= [369 370]; % [366 369];
-% AllChinIDs= 370;
-% NH
-% AllChinIDs= [365 368 369 370];
-AllChinIDs= [358 360 366 367 369 370];
-nMax2Plot= 0;
+AllChinIDs= [358 360 366 367 369 370]; % [366 369];
 
 [sig, fs]= audioread('/media/parida/DATAPART1/Matlab/SNRenv/SFR_sEPSM/shorter_stim/FLN_Stim_S_P.wav');
 t_sig= (1:length(sig))/fs;
 stim_dur= length(sig)/fs;
-LatexDir= '/home/parida/Dropbox/Seminars/SHRP_Feb19/figures/';
 
 restricted_time= [0 .72; 0.88 1.2];
 % restricted_time= [0 1.3];
-saveAgain= 0;
+saveAgain= 1;
 
 windowLength= 64e-3;
 fracOverLap= .75;
@@ -31,7 +25,7 @@ plot_dpss_each_iter= false;
 lw= 2;
 lw2= 3;
 nSProws=2;
-fSize= 20;
+fSize= 16;
 nSPcols=1;
 
 t_latency= 5e-3;
@@ -43,8 +37,6 @@ audio_freq_band_high= [500 3000];
 data_f0_related_band= [50 500];
 ratio_f0_env_to_tfs= nan(nSegs, 1);
 
-
-slope_vals= nan(length(AllChinIDs), 1);
 for chinVar= 1:length(AllChinIDs)
     restart_fig= 1;
     figure(2);
@@ -68,13 +60,9 @@ for chinVar= 1:length(AllChinIDs)
     
     allFiles= dir([RootDataDir '*' num2str(chinID) '*SFR*']);
     
-    
     if isempty(allFiles)
         error('No dir. what to do?');
-    end
-    allFiles= allFiles(~contains(lower({allFiles.name}'), 'pink'));
-    if length(allFiles)>1
-        
+    elseif length(allFiles)>1
         fprintf('there are multiple dirs. \n');
         
         for dirVar= 1:length(allFiles)
@@ -82,12 +70,14 @@ for chinVar= 1:length(AllChinIDs)
         end
         chosen_dir_num= input('Which one? \n');
         if contains(allFiles(chosen_dir_num).name, 'NH')
+%             chosen_dir_num= chosen_dir_num;
             postFix= 'NH';
         elseif contains(allFiles(chosen_dir_num).name, 'PTS')
+%             chosen_dir_num= 1;
             postFix= 'PTS';
-        else
-            postFix= 'NH';
-            warning('Assuming NH for %s', allFiles(chosen_dir_num).name);
+%         elseif contains(allFiles(chosen_dir_num).name, 'NH')
+% %             chosen_dir_num= 2;
+%             postFix= 'NH';
         end
         fprintf('choosing %d\n', chosen_dir_num);
         
@@ -103,7 +93,7 @@ for chinVar= 1:length(AllChinIDs)
     end
     
     fig_save_dir= sprintf('/media/parida/DATAPART1/Matlab/SNRenv/SFR_sEPSM/Figure_Out/moving_segment_analysis_vowel/');
-    if ~isfolder(fig_save_dir)
+    if ~isdir(fig_save_dir)
         mkdir(fig_save_dir);
     end
     
@@ -249,9 +239,9 @@ for chinVar= 1:length(AllChinIDs)
     mdl= fitlm(ratio_hf_to_lf_audio, ratio_f0_env_to_tfs);
     c_m = mdl.Coefficients.Estimate;
     ratio_f0_env_to_tfs_est= c_m(1)+ c_m(2)*ratio_hf_to_lf_audio_est;
-    slope_vals(chinVar)= c_m(2);
     
     [ratio_f0_env_to_tfs_max_vals, ratio_f0_env_to_tfs_max_inds]= sort(ratio_f0_env_to_tfs, 'descend','MissingPlacement','last');
+    nMax2Plot= 1;
     ratio_f0_env_to_tfs_max_inds= ratio_f0_env_to_tfs_max_inds(1:nMax2Plot); % Plot only nMax2Plot segs
     seg_ind_start= nan(nMax2Plot, 1);
     seg_ind_end= nan(nMax2Plot, 1);
@@ -276,18 +266,17 @@ for chinVar= 1:length(AllChinIDs)
     plot(t_data, s_data_tfs, 'color', co(5,:)); % very first time
     title(sprintf('Q%d, atten=%.0f dB, %s', chinID, s_atten, postFix));
     
-    lg_hans(1)= plot(nan, nan, 'color', co(1,:), 'linew', lw);
-    lg_hans(2)= plot(nan, nan, 'color', co(4,:), 'linew', lw);
-    lg_hans(3)= plot(nan, nan, 'color', co(5,:), 'linew', lw);
+    lg_hans(1)= plot(nan, nan, 'color', co(1,:));
+    lg_hans(2)= plot(nan, nan, 'color', co(4,:));
+    lg_hans(3)= plot(nan, nan, 'color', co(5,:));
     lg= legend(lg_hans, 'sig', 'env', 'tfs');
     grid on
     
-    figName= sprintf('Q%d_atten%.0fdB_%s_nSeg%d', chinID, s_atten, postFix, nMax2Plot);
+    figName= sprintf('Q%d_atten%.0fdB_%s', chinID, s_atten, postFix);
     set(gca, 'fontsize', fSize);
     xlabel('time(sec)');
     set(lg, 'fontsize', 12, 'location', 'southeast');
     axis tight;
-    ylabel('FFR (Amp)');
     
     subplot(223);
     yyaxis left;
@@ -296,15 +285,14 @@ for chinVar= 1:length(AllChinIDs)
     
     yyaxis right;
     hold on;
-    freq_ticks= [1 10 100 1e3];
     [Pxx_env, ~, px_env]= plot_dpss_psd(s_data_env, fs_data, 'NW', NW);
     set(px_env, 'color', co(4,:), 'linestyle', '-');
     [Pxx_tfs, freq_data, px_tfs]= plot_dpss_psd(s_data_tfs, fs_data, 'NW', NW);
     ylim([max([Pxx_env;Pxx_tfs])+10-dpss_yRange max([Pxx_env;Pxx_tfs])+10])
     set(px_tfs, 'color', co(5,:), 'linestyle', '-');
     lg= legend('sig', 'env', 'tfs');
-    set(lg, 'fontsize', 12, 'location', 'northwest');
-    set(gca, 'fontsize', fSize, 'ytick', [], 'xtick', freq_ticks);
+    set(lg, 'fontsize', 12, 'location', 'southwest');
+    set(gca, 'fontsize', fSize, 'ytick', []);
     ylabel('');
     title('');
     xlabel('Freq (Hz)');
@@ -322,40 +310,26 @@ for chinVar= 1:length(AllChinIDs)
     set(gca, 'xscale', 'log', 'yscale', 'log', 'ytick', ytick_vals);
     ylim([min(ytick_vals) max(ytick_vals)]);
     
-    %     xlabel(sprintf('Audio ratio (norm) HF (%.1f-%.1f kHz) to LF (%.2f-%.2f kHz)', audio_freq_band_high(1)/1e3, audio_freq_band_high(2)/1e3, audio_freq_band_low(1)/1e3, audio_freq_band_low(2)/1e3));
-    %     ylabel(sprintf('ENV/TFS in FFR in %.2f-%.2f kHz', data_f0_related_band(1)/1e3, data_f0_related_band(2)/1e3));
+%     xlabel(sprintf('Audio ratio (norm) HF (%.1f-%.1f kHz) to LF (%.2f-%.2f kHz)', audio_freq_band_high(1)/1e3, audio_freq_band_high(2)/1e3, audio_freq_band_low(1)/1e3, audio_freq_band_low(2)/1e3));
+%     ylabel(sprintf('ENV/TFS in FFR in %.2f-%.2f kHz', data_f0_related_band(1)/1e3, data_f0_related_band(2)/1e3));
     
-    xlabel(sprintf('$Carrier( ^{MF_{power}[.5-3kHz]}/_{LF_{power}[50-500Hz]})$'), 'interpreter', 'latex');
-    ylabel(sprintf('$FFR(^{ENV_{power}}/_{TFS_{power}})$'), 'interpreter', 'latex');
+    xlabel(sprintf('$Carrier( ^{MF=[.5-3kHz]}/_{LF[50-500Hz]})$'), 'interpreter', 'latex');
+    ylabel(sprintf('$FFR(^{ENV}/_{TFS})$'), 'interpreter', 'latex');
     
-    xtick_vals= [1e-3 1e-2 1e-1 1];
-    set(gca, 'fontsize', fSize, 'xtick', xtick_vals);
-    pValThresh= 1e-3;
-    if mdl.Coefficients.pValue(2)>1e-3
-        text(.4,.1,sprintf('$p=%.3f, R_{adj}^2=%.4f$', mdl.Coefficients.pValue(2), mdl.Rsquared.Adjusted), 'units', 'normalized', 'fontsize', fSize, 'interpreter', 'latex');
-    else
-        text(.4,.1,sprintf('$p<%.3f, R_{adj}^2=%.4f$', pValThresh, mdl.Rsquared.Adjusted), 'units', 'normalized', 'fontsize', fSize, 'interpreter', 'latex');
-    end
-    
+    set(gca, 'fontsize', fSize);
+    text(.1,.9,sprintf('p=%.4f, adj-R^2=%.4f', mdl.Coefficients.pValue(2), mdl.Rsquared.Adjusted), 'units', 'normalized', 'fontsize', fSize);
     grid on;
-    xlim([1e-3 2]);
     
     set(gcf, 'units', 'normalized', 'position', [0.1 0.1 .8 .8]);
     if saveAgain
         saveas(gcf, [fig_save_dir figName], 'tiff');
-        if chinID==370 && strcmp(postFix, 'NH') && nMax2Plot==1
-            saveas(gcf, [LatexDir figName '_one_seg'], 'epsc');
-        end
-        if nMax2Plot==0
-            saveas(gcf, [LatexDir figName], 'epsc');
-        end
     end
 end
 
 function curFilt= get_filter(fs_data)
 N_bp_half= 4;
 HalfPowerFrequency1=20;
-HalfPowerFrequency2=3e3;
+HalfPowerFrequency2=2e3;
 
 curFilt= designfilt('bandpassiir','FilterOrder',N_bp_half, ...get(p,props)
     'HalfPowerFrequency1',HalfPowerFrequency1,'HalfPowerFrequency2',HalfPowerFrequency2, ...

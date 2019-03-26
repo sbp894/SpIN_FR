@@ -1,9 +1,9 @@
 clear;
 clc;
 
-nh_clean_speech_data_dir= '/media/parida/DATAPART1/Matlab/ExpData/MatData/SP-2018_11_05-Q369_SFR_NH_pilot2/';
-nh_pinkmask_data_dir= '/media/parida/DATAPART1/Matlab/ExpData/MatData/SP-2018_11_08-Q369_SFR_NH_3_pink/';
-chinID= 369;
+pts_file_S= '/media/parida/DATAPART1/Matlab/ExpData/MatData/SP-2018_10_31-Q366_PTS_SFR/a0002_FFR_SNRenvSSN_Stim_S_P_nType0_atten10.mat';
+pts_pinkmask_data_dir= '/media/parida/DATAPART1/Matlab/ExpData/MatData/SP-2018_11_08-Q366_SFR_PTS_pilot2_pink/';
+chinID= 366;
 stimDir= '/media/parida/DATAPART1/Matlab/SNRenv/SFR_sEPSM/shorter_stim/stim/';
 fig_save_dir= '/media/parida/DATAPART1/Matlab/SNRenv/SFR_sEPSM/Figure_Out/maskerSFR/';
 
@@ -12,7 +12,7 @@ if ~isfolder(fig_save_dir)
 end
 
 
-allfiles= dir([nh_pinkmask_data_dir 'a*SFR*.mat']);
+allfiles= dir([pts_pinkmask_data_dir 'a*SFR*.mat']);
 nTypes= {'HP', 'LP'};
 
 condStruct.fNames= {allfiles.name}';
@@ -29,8 +29,8 @@ saveFigs=1;
 tStart= .3; tEnd= .7;
 % tStart= .18; tEnd= .72;
 tStart_whole= 0; tEnd_whole= 1.3;
-fig_save_dir_subdir= [fig_save_dir sprintf('t%.0fto%.0f_ms/', tStart*1e3, tEnd*1e3)];
 
+fig_save_dir_subdir= [fig_save_dir sprintf('t%.0fto%.0f_ms/', tStart*1e3, tEnd*1e3)];
 
 raw_power_env= nan(length(uniq_snrs)+1, length(uniq_nType)); % +1 for clean speech
 frac_power_env= nan(length(uniq_snrs)+1, length(uniq_nType)); % +1 for clean speech
@@ -51,7 +51,7 @@ for snrVar= 1:length(uniq_snrs)
             nPairs_actual= nan(length(cur_inds), 1);
             for fileVar= 1:length(cur_inds)
                 fileInd= cur_inds(fileVar);
-                temp_data= load([nh_pinkmask_data_dir allfiles(fileInd).name]);
+                temp_data= load([pts_pinkmask_data_dir allfiles(fileInd).name]);
                 temp_data = temp_data.data;
                 sn_data_cell{fileVar, 1}= temp_data.AD_Data.AD_Avg_PO_V{1};
                 sn_data_cell{fileVar, 2}= temp_data.AD_Data.AD_Avg_NP_V{1};
@@ -76,7 +76,7 @@ for snrVar= 1:length(uniq_snrs)
                 sn_data_neg= sn_data_neg + temp_neg(inds2load)*nPairs_actual(fileVar)/sum(nPairs_actual);
             end
             
-            temp_s= load('/media/parida/DATAPART1/Matlab/ExpData/MatData/SP-2018_11_05-Q369_SFR_NH_pilot2/a0002_FFR_SNRenvSSN_Stim_S_P_nType0_atten10.mat');
+            temp_s= load(pts_file_S);
             temp_s= temp_s.data;
             s_data_pos= temp_s.AD_Data.AD_Avg_PO_V{1};
             s_data_neg= temp_s.AD_Data.AD_Avg_NP_V{1};
@@ -101,10 +101,10 @@ for snrVar= 1:length(uniq_snrs)
             s_data_tfs= (s_data_pos_filt-s_data_neg_filt)/2;
             
             figHan= 1;
-            fName= strrep(sprintf('Q%d_nh_SNR%d_%s_s_vs_sn', chinID, curSNR, cur_nType), '-', 'm');
-            ttlStr= sprintf('Q%d, NH, SNR %d, %s', chinID, curSNR, cur_nType);
+            fName= strrep(sprintf('Q%d_pts_SNR%d_%s_s_vs_sn', chinID, curSNR, cur_nType), '-', 'm');
+            ttlStr= sprintf('Q%d, PTS, SNR %d, %s', chinID, curSNR, cur_nType);
             %             create_panel_plot_include_hilbert(figHan, fs_sig, sig, fs_data, sn_data_pos_filt, sn_data_neg_filt, sn_data_env, sn_data_tfs, tStart, tEnd, ...
-            %                 fig_save_dir_subdir, fName, ttlStr, saveFigs);
+            %                 [fig_save_dir sprintf('t%.0fto%.0f_ms/', tStart*1e3, tEnd*1e3)], fName, ttlStr, saveFigs);
             PSD_struct= create_panel_plot_s_vs_sn(figHan, fs_sig, sig, fs_data, sn_data_pos_filt, sn_data_neg_filt, s_data_pos_filt, s_data_neg_filt, tStart, tEnd, ...
                 fig_save_dir_subdir, fName, ttlStr, saveFigs);
             
@@ -145,7 +145,7 @@ plot(1:size(raw_power_tfs,1), raw_power_tfs, '^', 'markersize', mrkSize, 'linew'
 grid on;
 ylabel('$RAW_{power} (dB)$', 'interpreter', 'latex');
 set(gca,'fontsize', fSize, 'xtick', 1:size(raw_power_env,1), 'xticklabel', xlabel_str);
-title(['NH- Q' num2str(chinID)]);
+title('PTS- Q366');
 
 subplot(212);
 hold on;
@@ -158,9 +158,8 @@ set(gca,'fontsize', fSize, 'xtick', 1:size(raw_power_env,1), 'xticklabel', xlabe
 xlabel('HP Masking SNR (dB)');
 set(gcf, 'units', 'inches', 'position', [1 1 10 6]);
 
-fName_summary= sprintf('Q%d_nh_pink_summary_%s', chinID, 'HP');
+fName_summary= sprintf('Q%d_pts_pink_summary_%s', chinID, 'HP');
 saveas(gcf, [fig_save_dir_subdir fName_summary], 'png');
-
 
 function curFilt= get_filter(fs_data)
 N_bp_half= 4;

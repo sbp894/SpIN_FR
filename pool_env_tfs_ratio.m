@@ -3,6 +3,7 @@ clear;
 clc;
 
 RootDataDir= '/media/parida/DATAPART1/Matlab/ExpData/MatData/';
+LatexDir= '/home/parida/Dropbox/Seminars/SHRP_Feb19/figures/';
 
 fig_save_dir= sprintf('/media/parida/DATAPART1/Matlab/SNRenv/SFR_sEPSM/Figure_Out/moving_segment_analysis_vowel/');
 if ~isdir(fig_save_dir)
@@ -160,17 +161,18 @@ if remove_outlier
     pool_ratio_hf_to_lf_audio(Exclude_point.index, :)= nan;
     pool_ratio_f0_env_to_tfs(Exclude_point.index, :)= nan;
     figure(2);
-    figName= 'pooled_aud_env_ratios_all_included';
+    figName= 'pooled_aud_env_ratios_outlier_excluded';
 else
     figure(1);
-    figName= 'pooled_aud_env_ratios_outlier_excluded';
+    figName= 'pooled_aud_env_ratios_all_included';
 end
 
 clf;
 markSize= 12;
-fSize= 14;
+fSize= 20;
 ax= nan(subGroups.nums, 1);
-lw= 3;
+lw= 2;
+lw2= 3;
 
 % remove_outlier= true;
 
@@ -190,21 +192,27 @@ for typeVar= 1:subGroups.nums
     c_m = mdl.Coefficients.Estimate;
     cur_subgroup_est_y= c_m(1)+ c_m(2)*cur_subgroup_est_x;
     
-    plot(cur_subgroup_data_x, cur_subgroup_data_y, subGroups.marker{typeVar}, 'markersize', markSize);
+    plot(cur_subgroup_data_x, cur_subgroup_data_y, subGroups.marker{typeVar}, 'markersize', markSize, 'linew', lw);
     hold on;
-    plot(cur_subgroup_est_x, cur_subgroup_est_y, '-', 'color', subGroups.cols{typeVar}, 'linew', lw);
+    plot(cur_subgroup_est_x, cur_subgroup_est_y, '-', 'color', subGroups.cols{typeVar}, 'linew', lw2);
     
     grid on;
     
     set(gca, 'xscale', 'log', 'yscale', 'log', 'fontsize', fSize);
     title(subGroups.names{typeVar});
-    xlabel(sprintf('Audio ratio (norm) HF (%.1f-%.1f kHz) to LF (%.2f-%.2f kHz)', audio_freq_band_high(1)/1e3, audio_freq_band_high(2)/1e3, audio_freq_band_low(1)/1e3, audio_freq_band_low(2)/1e3));
-    ylabel(sprintf('ENV/TFS in FFR in %.2f-%.2f kHz', data_f0_related_band(1)/1e3, data_f0_related_band(2)/1e3));
-    text(.1,.9,sprintf('p=%.4f, adj-R^2=%.4f', mdl.Coefficients.pValue(2), mdl.Rsquared.Adjusted), 'units', 'normalized', 'fontsize', fSize);
+    xlabel(sprintf('$Carrier( ^{MF_{power}[.5-3kHz]}/_{LF_{power}[50-500Hz]})$'), 'interpreter', 'latex');
+    ylabel(sprintf('$FFR(^{ENV_{power}}/_{TFS_{power}})$'), 'interpreter', 'latex');
+    pValThresh= 1e-3;
+    if mdl.Coefficients.pValue(2)>1e-3
+        text(.4,.1,sprintf('$p=%.3f, R_{adj}^2=%.4f$', mdl.Coefficients.pValue(2), mdl.Rsquared.Adjusted), 'units', 'normalized', 'fontsize', fSize, 'interpreter', 'latex');
+    else
+        text(.4,.1,sprintf('$p<%.3f, R_{adj}^2=%.4f$', pValThresh, mdl.Rsquared.Adjusted), 'units', 'normalized', 'fontsize', fSize, 'interpreter', 'latex');
+    end
     
 end
+
 if remove_outlier
-    title([subGroups.names{typeVar} '(removed one outlier (Q369, PTS))']);
+    title([subGroups.names{typeVar} '*']);
 end
 
 linkaxes(ax);
@@ -213,6 +221,9 @@ ylim([min(pool_ratio_f0_env_to_tfs(:))*.9 max(pool_ratio_f0_env_to_tfs(:))*1.1])
 
 set(gcf, 'units', 'normalized', 'position', [0.1 0.1 .8 .8]);
 saveas(gcf, [fig_save_dir figName], 'tiff');
+
+saveas(gcf, [LatexDir figName], 'epsc');
+
 %%
 function curFilt= get_filter(fs_data)
 N_bp_half= 4;
