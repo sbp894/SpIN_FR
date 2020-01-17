@@ -262,7 +262,7 @@ for chinVar= 1:length(AllChinIDs)
     xlabel(sprintf('Audio ratio (norm) HF (%.1f-%.1f kHz) to LF (%.1f-%.1f kHz)', audio_freq_band_high(1)/1e3, audio_freq_band_high(2)/1e3, audio_freq_band_low(1)/1e3, audio_freq_band_low(2)/1e3));
     ylabel(sprintf('ENV/TFS in FFR in %.0f-%.0f Hz', data_f0_related_band(1), data_f0_related_band(2)));
     set(gca, 'fontsize', fSize);
-    text(.1,.9,sprintf('p=%.4f, adj-R^2=%.4f', mdl.Coefficients.pValue(2), mdl.Rsquared.Adjusted), 'units', 'normalized', 'fontsize', fSize);
+    text(.1,.9,sprintf('p=%.4f, R^2=%.4f', mdl.Coefficients.pValue(2), mdl.Rsquared.Ordinary), 'units', 'normalized', 'fontsize', fSize);
     
     set(gcf, 'units', 'normalized', 'position', [0.1 0.1 .8 .8]);
     saveas(gcf, [fig_save_dir figName], 'tiff');

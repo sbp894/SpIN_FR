@@ -3,12 +3,15 @@ clc;
 close all;
 
 
+saveFigs= 0;
 allChins= [358 360 366 367 369 370];
+% allChins= [358 360 366 367 370];
 
 DataDir= '/media/parida/DATAPART1/Matlab/ABR/Output/';
 figOutDir= '/media/parida/DATAPART1/Matlab/SNRenv/SFR_sEPSM/Figure_Out/';
 
 LatexDir= '/home/parida/Dropbox/Seminars/SHRP_Feb19/figures/';
+LatexDir_prelims= '/home/parida/Dropbox/Academics/Prelims/slides/figures/';
 
 types= {'NH', 'HI'};
 freqs2use= [.5 1 2 4 8]*1e3;
@@ -44,7 +47,7 @@ for chinVar= 1:length(allChins)
     end
 end
 
-%% plot 
+%% plot
 mrkSize= 20;
 lw= 3;
 fSize= 18;
@@ -99,6 +102,35 @@ set(gca, 'fontsize', fSize);
 
 set(gcf, 'units', 'normalized', 'position', [.1 .1 .8 .8]);
 fName= 'baselines_for_sfr';
-saveas(gcf, [figOutDir fName], 'tiff');
+% saveas(gcf, [figOutDir fName], 'png');
 
-saveas(gcf, [LatexDir fName], 'epsc');
+% saveas(gcf, [LatexDir fName], 'epsc');
+
+%%
+figure(2);
+clf;
+
+nh_data= cell2mat(thresh_data.nh.z)';
+hi_data= cell2mat(thresh_data.hi.z)';
+outlier_ind= 5;
+reg_ind= setxor(1:length(allChins), outlier_ind);
+
+plot(freqs2use, nh_data, '-bd','markersize', mrkSize, 'linew', lw);
+hold on;
+plot(freqs2use, hi_data, '-ro','markersize', mrkSize, 'linew', lw);
+grid on;
+set(gca, 'xscale', 'log', 'xtick', freqs2use);
+xlim([.4 10]*1e3);
+xlabel('Frequency (Hz)');
+ylabel('ABR threshold (dB)');
+set(gca, 'fontsize', fSize);
+
+lg= plot(nan, nan, '-bd', nan, nan, '-ro','markersize', mrkSize, 'linew', lw);
+legend(lg, 'NH', 'HI', 'Location', 'southeast');
+
+ylim([-2 50]);
+set(gcf, 'Units', 'inches', 'Position', [1 1 6 4]);
+fName2= 'abr_thresh_ffr';
+if saveFigs
+    saveas(gcf, [LatexDir_prelims fName2], 'epsc');
+end

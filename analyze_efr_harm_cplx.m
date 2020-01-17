@@ -4,15 +4,17 @@ clc;
 clf;
 
 colSpread= .2;
-co(1:3,:)= [1-colSpread*rand(3,1) colSpread*rand(3,1) colSpread*rand(3,1)];
-co(4:7,:)= [colSpread*rand(4,1) colSpread*rand(4,1) 1-colSpread*rand(4,1)];
+nhChins= [365 368 369 370];
+hiChins= [366 367];
+allChins= [nhChins hiChins]; % 191
+co(ismember(allChins, hiChins),:)= [1-colSpread*rand(numel(hiChins),1) colSpread*rand(numel(hiChins),1) colSpread*rand(numel(hiChins),1)];
+co(ismember(allChins, nhChins),:)= [colSpread*rand(numel(nhChins),1) colSpread*rand(numel(nhChins),1) 1-colSpread*rand(numel(nhChins),1)];
 
 lw=2;
 lw2= 3;
-mrkSize= 16;
+mrkSize= 6;
 count=0;
 
-allChins= [191 366 367 365 368 369 370];
 allSPL= [55 70 82];
 CodesDir= '/media/parida/DATAPART1/Matlab/SNRenv/SFR_sEPSM/';
 DataDir= '/media/parida/DATAPART1/Matlab/ExpData/MatData/';
@@ -79,7 +81,7 @@ for splVar= 1:length(allSPL)
         data_tfs= (data_pos_bp - data_neg_bp)/2;
         
         
-        plot_data_pos_neg=0;
+        plot_data_pos_neg=1;
         if plot_data_pos_neg
             figure
             plot(t_data, data_pos_bp)
@@ -105,7 +107,7 @@ for splVar= 1:length(allSPL)
         
         ttlStr= sprintf('Intensity=%.0f dB SPL, %d-%d Hz band', allSPL(splVar), HalfPowerFrequency1, HalfPowerFrequency2);
         
-        plot_data_env_tfs= 0;
+        plot_data_env_tfs= 1;
         if plot_data_env_tfs
             figure
             plot(t_data, env_f0)

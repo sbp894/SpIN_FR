@@ -317,7 +317,7 @@ for chinVar= 1:length(AllChinIDs)
     ylabel(sprintf('$FFR(^{ENV}/_{TFS})$'), 'interpreter', 'latex');
     
     set(gca, 'fontsize', fSize);
-    text(.1,.9,sprintf('p=%.4f, adj-R^2=%.4f', mdl.Coefficients.pValue(2), mdl.Rsquared.Adjusted), 'units', 'normalized', 'fontsize', fSize);
+    text(.1,.9,sprintf('p=%.4f, R^2=%.4f', mdl.Coefficients.pValue(2), mdl.Rsquared.Ordinary), 'units', 'normalized', 'fontsize', fSize);
     grid on;
     
     set(gcf, 'units', 'normalized', 'position', [0.1 0.1 .8 .8]);
